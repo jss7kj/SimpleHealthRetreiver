@@ -1,4 +1,4 @@
-# SimpleHealthRetreiver
+# SimpleHealthRetriever
 A simple way to view data from the iOS Health app
 
 
@@ -15,7 +15,7 @@ install.packages('reshape2') # etc.
 install.packages('data.table') # etc.
 
 library('shiny')
-runGitHub("SimpleHealthRetreiver","jss7kj")
+runGitHub("SimpleHealthRetriever","jss7kj")
 ```
 
 
