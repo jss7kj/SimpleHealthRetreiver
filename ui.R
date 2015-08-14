@@ -5,7 +5,7 @@
 # ui.R
 library(shiny)
 
-shinyUI(navbarPage("AppleRetreiver",
+shinyUI(navbarPage("SimpleHealthRetriever",
   tabPanel("File Upload",
     sidebarLayout(
       sidebarPanel(
