@@ -14,7 +14,6 @@ install.packages('XML') # if XML is not installed
 install.packages('reshape2') # etc.
 install.packages('data.table') # etc.
 
-library('shiny')
 runGitHub("SimpleHealthRetreiver","jss7kj")
 ```
 
