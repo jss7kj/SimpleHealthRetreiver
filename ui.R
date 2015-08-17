@@ -33,8 +33,16 @@ shinyUI(navbarPage("SimpleHealthRetriever",
       )
    ),
   tabPanel("Feature Explorer",
-      # Forthcoming!
-           ""
+      sidebarLayout(
+        sidebarPanel(
+          uiOutput("feature.select.ui"),
+          numericInput("nlabels",label = "Date Labels",value = 25,min = 1,max = 100),
+          radioButtons("fit.choose",label="Fit",choices = c("Splines","Linear","None"),selected="Splines")
+          ),
+        mainPanel(
+          plotOutput("feature.plot")
+          ),
+        )
    )
   
   ))

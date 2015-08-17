@@ -1,7 +1,9 @@
+
 library(shiny)
 library(XML)
 library(data.table)
 library(reshape2)
+library(ggplot2)
 
 shinyServer(function(input,output){
   # Unfortunately Apple stores its health data in attributes, are not consistent across records
@@ -120,15 +122,11 @@ shinyServer(function(input,output){
     hdf$startDate[hdf$startDate == "NA"] = NA
     hdf$endDate[hdf$endDate == "NA"] = NA
     hdf$creationDate[hdf$creationDate == "NA"] = NA
-#     if(input$unix.time) {
-#       hdf$startDate = lapply(hdf$startDate, function(x) as.numeric(x))
-#       hdf$endDate = lapply(hdf$endDate, function(x) as.numeric(x))
-#       hdf$creationDate = lapply(hdf$creationDate, function(x) as.numeric(x))
-#     } else {
-      hdf$startDate = sd_c
-      hdf$endDate = ed_c
-      hdf$creationDate = cd_c
-    # }
+
+    hdf$startDate = sd_c
+    hdf$endDate = ed_c
+    hdf$creationDate = cd_c
+     
 
     if(input$format.choose == "Long") {
       hdf.melted = melt(hdf,id.vars = c(1,5,6,7))
@@ -159,7 +157,7 @@ shinyServer(function(input,output){
     if(is.null(input$xmlfile)) {
       return(NULL)
     } else {
-      selectInput("select.type",label = "Select Type",choices = unique(getData()$type),multiple=TRUE)
+      selectInput("select.type",label = "Select Feature(s)",choices = unique(getData()$type),multiple=TRUE)
     } 
   })
   
@@ -169,6 +167,65 @@ shinyServer(function(input,output){
       write.csv(data.frame(lapply(getData(), as.character), stringsAsFactors=FALSE), file)
     }
   )
+
+################################################################################################### Feature Explorer
+
+  getFeatureData = reactive({
+    feature.df = getData()
+    feature.df = subset(feature.df,feature.df$type == input$feature.type)
+    return(feature.df)
+  })
+  output$feature.select.ui = renderUI({
+    if(is.null(input$xmlfile)) {
+      return(NULL)
+    } else {
+      selectInput("feature.type",label = "Select Feature",choices = unique(getData()$type),multiple=FALSE)
+    } 
+  })
+
+  output$feature.plot = renderPlot({
+    hdf = getFeatureData();
+    if(nrow(hdf)==0) {
+      return(NULL)
+    }
+    hdf <<- hdf
+    dates.posix = as.POSIXlt(strptime(hdf$startDate,format = "%Y-%m-%d %H:%M:%S"))
+    
+    std = as.character(round.POSIXt(dates.posix, "days"))
+    hdf.agg = aggregate(value~std,hdf,FUN = function(x){suppressWarnings(as.numeric(sum(x)))})
+    
+    hdf.agg <<- hdf.agg
+    
+    vals = hdf.agg$value;
+    dates = 1:length(vals)
+    
+    numlabels = input$nlabels
+    
+    t.year = substring(hdf.agg$std,3,4)
+    t.mon = as.numeric(substring(hdf.agg$std,6,7))
+    t.day = substring(hdf.agg$std,9,10)
+    
+    time.labels = paste(t.mon,"-",t.day,"-",t.year,sep="")
+    
+    
+      
+      p = qplot(x = dates,y = vals) + 
+          scale_x_continuous(breaks=seq(1,length(dates),length.out = numlabels),labels=time.labels[seq(1,length(dates),length.out = numlabels)]) +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1,size=rel(1.4))) +
+          labs(x = "",y = paste("Value (",unique(hdf$unit),")"))
+    
+      if (input$fit.choose == "Splines") {
+        p = p + geom_smooth()
+      } else if (input$fit.choose == "Linear") {
+        p = p + stat_smooth(method = "lm")
+      }
+    
+    print(p)
+
+    
+    
+
+    })
   
   
 })
