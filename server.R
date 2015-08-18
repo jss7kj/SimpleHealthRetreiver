@@ -210,9 +210,14 @@ shinyServer(function(input,output){
     
       
       p = qplot(x = dates,y = vals) + 
-          scale_x_continuous(breaks=seq(1,length(dates),length.out = numlabels),labels=time.labels[seq(1,length(dates),length.out = numlabels)]) +
-          theme(axis.text.x = element_text(angle = 45, hjust = 1,size=rel(1.4))) +
-          labs(x = "",y = paste("Value (",unique(hdf$unit),")"))
+          scale_x_discrete(breaks=seq(1,length(dates),length.out = numlabels),
+                           labels=time.labels[seq(1,length(dates),length.out = numlabels)]
+          ) +
+          theme(
+            axis.text.x = element_text(angle = 45, hjust = 1, size=rel(1.4)),
+            axis.text.y = element_text(hjust = 1, size = rel(1.4))
+          ) +
+          labs(x = "",y = paste("Value (",unique(hdf$unit),")",sep=""))
     
       if (input$fit.choose == "Splines") {
         p = p + geom_smooth()
